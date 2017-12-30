@@ -3,6 +3,16 @@ from datetime import datetime
 from keras.optimizers import Adam,SGD
 
 class npsg:
+    """
+    npsg(self,
+                 m_loss="mae",
+                 m_metric=["accuracy"],
+                 m_opt=Adam,
+                 m_lr=1e-4,
+                 m_loss_weights=False,
+                 gan_name="GAN_"+datetime.now().strftime("%Y%m%d_%H%M%S"),
+                 batch_size=128)
+    """
     def __init__(self,
                  m_loss="mae",
                  m_metric=["accuracy"],
