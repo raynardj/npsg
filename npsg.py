@@ -118,7 +118,7 @@ class data4D:
 
     def fake(self):
         if self.step==0:
-            self.fkdt=np.zeros(shape=tuple([self.sz]+list(self.G.output_shape)))
+            self.fkdt=np.zeros(shape=tuple([self.sz,self.sz]+list(self.G.output_shape[1:])))
         self.fkdt[self.spin]=self.G.predict(self.noi(self.sz))
         if self.step<self.sz:
             fk=self.fkdt[self.spin]
