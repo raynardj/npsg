@@ -1,17 +1,9 @@
-from keras.models import Model
 from datetime import datetime
-from keras.optimizers import Adam,SGD
+from .utils import *
 
 class npsg:
     """
-    npsg(self,
-                 m_loss="mae",
-                 m_metric=["accuracy"],
-                 m_opt=Adam,
-                 m_lr=1e-4,
-                 m_loss_weights=False,
-                 gan_name="GAN_"+datetime.now().strftime("%Y%m%d_%H%M%S"),
-                 batch_size=128)
+    npsg doc
     """
     def __init__(self,
                  m_loss="mae",
@@ -98,5 +90,55 @@ class npsg:
         """
         model.trainable = _t
         for l in model.layers: l.trainable = _t
+
+class data4D:
+    def __init__(self,G,real_gen,bs=128):
+        """
+        Historic fake data
+        :param G: Generative model(keras model)
+        :param real_gen: real data generator
+        :param bs: batch_size, have to be even numbers
+        """
+        self.G=G
+        self.real_gen=real_gen # generator for real data
+        self.bs=bs # batch size
+        assert self.bs%2 == 0, "arg:bs has to be even number"
+        self.sz=int(self.bs/2)
+        self.real_gen.batch_size=self.sz
+        self.step=0
+        self.spin=0
+
+    def noi_func(self,noi_func):
+        """
+        Adapting a noise function
+        :param noi_func: The noise function for generator
+        :return: Nothing
+        """
+        self.noi=noi_func
+
+    def fake(self):
+        if self.step==0:
+            self.fkdt=np.zeros(shape=tuple([self.sz]+list(self.G.output_shape)))
+        self.fkdt[self.spin]=self.G.predict(self.noi(self.sz))
+        if self.step<self.sz:
+            fk=self.fkdt[self.spin]
+        else:
+            fk=self.fkdt[:,int(self.sz*np.random.rand())]
+        return fk
+
+    def march(self):
+        self.step += 1
+        self.spin += 1
+        if self.spin >= self.sz: self.spin -= self.sz
+
+    def __next__(self):
+        f=self.fake()
+        r=self.real_gen.next()
+        flbl=np.ones(self.sz)
+        rlbl=np.zeros(self.sz)
+        self.march()
+        return np.concatenate([f,r],axis=0),np.concatenate([flbl,rlbl],axis=0)
+
+
 
 
